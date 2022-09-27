@@ -44,12 +44,12 @@ export default class TurnSubscriber{
         var ytImgClass = new Array();
         ytImgClass.push("adding");
 
-        if (game.modules.get('combat-utility-belt')?.active) {
-            if(game.cub.hideNames.shouldReplaceName(combat?.combatant?.actor))
-            {
-                ytName = game.cub.hideNames.getReplacementName(combat?.combatant?.actor)
-            }            
-          }
+        //if (game.modules.get('combat-utility-belt')?.active) {
+        //    if(game.cub.hideNames.shouldReplaceName(combat?.combatant?.actor))
+         //   {
+        //        ytName = game.cub.hideNames.getReplacementName(combat?.combatant?.actor)
+       //     }            
+       //   }
 
 
         if(combat?.combatant?.isOwner && !game.user.isGM && combat?.combatant?.players[0]?.active)
