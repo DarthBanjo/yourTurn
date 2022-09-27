@@ -3,14 +3,6 @@ export default class TurnSubscriber{
     
     static gmColor; 
     static myTimer;
-    static lastCombatant;
-
-    static imgCount = 1;
-    static currentImgID = null;
-    static nextImgID; 
-
-    static expectedNext;
-
 
     static begin(){
         Hooks.on("ready",()=> 
@@ -25,114 +17,39 @@ export default class TurnSubscriber{
     }
 
     static _onUpdateCombat(combat, update, options, userId) {       
-        if(!(update["turn"] || update["round"])){return;}
-
-        console.log(update);
-
-        if(!combat.started){return;}
-
-        if(combat.combatant == this.lastCombatant){return;}
-
-        this.lastCombatant = combat.combatant;
-
-
+        if(!update["turn"] && !update["round"]){return;}
 
         this.image = combat?.combatant.actor.img;
 
-        var ytName = combat?.combatant.name;
         var ytText = "";
-        var ytImgClass = new Array();
-        ytImgClass.push("adding");
-
-        //if (game.modules.get('combat-utility-belt')?.active) {
-        //    if(game.cub.hideNames.shouldReplaceName(combat?.combatant?.actor))
-         //   {
-        //        ytName = game.cub.hideNames.getReplacementName(combat?.combatant?.actor)
-       //     }            
-       //   }
-
+        var ytImgClass = `class="yourTurnImg"`;
 
         if(combat?.combatant?.isOwner && !game.user.isGM && combat?.combatant?.players[0]?.active)
         {
-            ytText = `It's your Turn, ${ytName}!`;
+            ytText = `It's your Turn, ${combat?.combatant.name}!`;
         }
         else if(combat?.combatant?.hidden && !game.user.isGM)
         {   
             ytText = `Something is happening....`
-            ytImgClass.push("silhoutte");
+            ytImgClass = `class="yourTurnImg silhoutte"`;
         }
         else
         {
-            ytText = `${ytName}'s Turn!`;
+            ytText = `${combat?.combatant.name}'s Turn!`;
         }
 
-        let nextCombatant = this.getNextCombatant(combat);
-        let expectedNext = combat?.nextCombatant;
-
-        var container =  document.getElementById("yourTurnContainer");
-        if(container == null)
-        {
-            let containerDiv = document.createElement("div");
-            let uiTOP = document.getElementById("ui-top");
-            containerDiv.id = "yourTurnContainer";
-
-
-
-            uiTOP.appendChild(containerDiv);
-
-            console.log("Appended Container");
-            console.log(uiTOP.childNodes);
-
-            container = document.getElementById("yourTurnContainer");
-        }
-
-        
-        this.checkAndDelete(this.currentImgID);
-        this.checkAndDelete("yourTurnBanner");
-
-        var nextImg = document.getElementById(this.nextImgID);
-
-
-
-        if(nextImg != null){
-            if(combat?.combatant != this.expectedNext)
-            {
-            nextImg.remove();
-            this.currentImgID = null;
-            }
-            else{
-                this.currentImgID = this.nextImgID;
-            }           
-        }
-
-        this.imgCount = this.imgCount + 1;
-        this.nextImgID = `yourTurnImg${this.imgCount}`;
-
-        let imgHTML = document.createElement("img");
-        imgHTML.id = this.nextImgID;
-        imgHTML.className = "yourTurnImg";
-        imgHTML.src = expectedNext?.actor.img;
-        
-        if(this.currentImgID == null)
-        {           
-            this.currentImgID = `yourTurnImg${this.imgCount - 1}`;
-
-            let currentImgHTML = document.createElement("img");
-            currentImgHTML.id = this.currentImgID;
-            currentImgHTML.className = "yourTurnImg";
-            currentImgHTML.src = this.image;
-            
-            container.append(currentImgHTML)
-            console.log(imgHTML);
-        }
-
-        let bannerDiv = document.createElement("div");
-        bannerDiv.id = "yourTurnBanner";
-        bannerDiv.className = "yourTurnBanner";
-        bannerDiv.style.height = 150;
-        bannerDiv.innerHTML = `<p id="yourTurnText" class="yourTurnText">${ytText}</p><div class="yourTurnSubheading">Round #${combat.round} Turn #${combat.turn}</div>${this.getNextTurnHtml(nextCombatant)}<div id="yourTurnBannerBackground" class="yourTurnBannerBackground" height="150"></div>`;
-        
-        
+        let html =         
+        `
+        <div id="yourTurnContainer" class="yourTurnContainer">
+        <img id="yourTurnImg" ${ytImgClass} src="${this.image}"></img>
+        <div id="yourTurnBanner" class="yourTurnBanner" height="150">
+        <p id="yourTurnText" class="yourTurnText">${ytText}<p>
+        <div class="yourTurnSubheading">Round #${combat.round} Turn #${combat.turn}</div>${this.getNextTurnHtml(combat)}
+        </div>
+        <div id="yourTurnBannerBackground" class="yourTurnBannerBackground" height="150"></div>
+        </div>
+        </div>
+        `;
 
 
         var r = document.querySelector(':root');
@@ -146,15 +63,11 @@ export default class TurnSubscriber{
             r.style.setProperty('--yourTurnPlayerColorTransparent', this.gmColor + "80");
         }
 
-        let currentImgHTML = document.getElementById(this.currentImgID);
-        while(ytImgClass.length > 0){
-            currentImgHTML.classList.add(ytImgClass.pop());
-        }
+        if ($("#ui-top").find(`div[id="yourTurnContainer"]`).length > 0){
+            $("#ui-top").find(`div[id="yourTurnContainer"]`).remove();
+        } 
 
-        container.append(imgHTML);
-        container.append(bannerDiv);
-
-
+        $("#ui-top").append(html);
 
         clearInterval(this?.myTimer);
         this.myTimer = setInterval(() => {
@@ -177,21 +90,22 @@ export default class TurnSubscriber{
 
     static unloadImage()
     {
-        clearInterval(this.myTimer);
         var element = document.getElementById("yourTurnBannerBackground");
         element.classList.add("removing");
 
         element = document.getElementById("yourTurnBanner");
         element.classList.add("removing");
         
-        element = document.getElementById(this.currentImgID);
+        element = document.getElementById("yourTurnImg");
         element.classList.add("removing");
+        clearInterval(this.myTimer);
     }
 
-    static getNextCombatant(combat)
+    static getNextTurnHtml(combat)
     {
         let j = 1;
         let combatant = combat?.turns[(combat.turn + j) % combat.turns.length];
+        let displayNext = true;
 
         while(combatant.hidden && (j < combat.turns.length) && !game.user.isGM)
         {
@@ -199,46 +113,17 @@ export default class TurnSubscriber{
             combatant = combat?.turns[(combat.turn + j) % combat.turns.length];
         }
 
-        return combatant;
-    }
-
-    static getNextTurnHtml(combatant)
-    {
-        let displayNext = true;
-
-        let name = combatant.name;
-        let imgClass = "yourTurnImg yourTurnSubheading";
-        
-        if (game.modules.get('combat-utility-belt')?.active) 
-        {
-            if(game.cub.hideNames.shouldReplaceName(combatant?.actor))
-            {
-                name = game.cub.hideNames.getReplacementName(combatant?.actor)
-                imgClass = imgClass + " silhoutte";
-            }        
-        }
-
-        //displayNext = (j != combat.turns.length);
+        displayNext = (j != combat.turns.length);
 
         if(displayNext)
         {
-            let rv = `<div class="yourTurnSubheading last">Next Up :  <img class="${imgClass}" src="${combatant.actor.img}"></img>${name}</div>`;
-            console.log(rv);
-            return rv;
+            return `<div class="yourTurnSubheading last">Next Up :  <img class="yourTurnImg yourTurnSubheading" src=${combatant.actor.img}></img> ${combatant.name}</div>`;
         }
         else
         {
-            return  null;
+            return  ``;
         }
 
-    }
-
-    static checkAndDelete(elementID){
-        
-        var prevImg = document.getElementById(elementID);
-        if(prevImg != null){
-            prevImg.remove();
-        }
     }
 
     
