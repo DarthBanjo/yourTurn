@@ -44,8 +44,8 @@ export default class TurnSubscriber{
         <img id="yourTurnImg" ${ytImgClass} src="${this.image}"></img>
         <div id="yourTurnBanner" class="yourTurnBanner" height="150">
         <p id="yourTurnText" class="yourTurnText">${ytText}<p>
-        <div class="yourTurnSubheading">Round #${combat.round} Turn #${combat.turn}</div>${this.getNextTurnHtml(combat)}
-        </div>
+        <!--<div class="yourTurnSubheading">Round #${combat.round} Turn #${combat.turn}</div>${this.getNextTurnHtml(combat)}
+        </div>-->
         <div id="yourTurnBannerBackground" class="yourTurnBannerBackground" height="150"></div>
         </div>
         </div>
