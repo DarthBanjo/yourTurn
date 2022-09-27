@@ -2,7 +2,7 @@
     "name": "your-turn",
     "title": "Your Turn!",
     "description": "A simple module which adds a user specific to do list.",
-    "version": "1.03",
+    "version": "1.04",
     "author": "Autmor",
     "authors": [
       {
@@ -19,6 +19,6 @@
 	"readme": "https://github.com/DarthBanjo/yourTurn/blob/main/README.md",
   "compatibility": {
     "minimum": "9",
-    "verified": "9"
+    "verified": "9.99"
   }
 }
