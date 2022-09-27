@@ -15,7 +15,7 @@
     ],
     "url": "https://github.com/DarthBanjo/yourTurn",
 	"manifest": "https://raw.githubusercontent.com/DarthBanjo/yourTurn/main/module.json",
-	"download": "",
+	"download": "https://github.com/DarthBanjo/yourTurn/archive/refs/heads/main.zip",
 	"readme": "https://github.com/DarthBanjo/yourTurn/blob/main/README.md",
 	"flags": {
 		"allowBugReporter": true
